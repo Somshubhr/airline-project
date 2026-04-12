@@ -1,12 +1,12 @@
 import UserNavbar from "../components/userNavbar";
-
+import Chatbot from "../components/chatBot";
 export default function UserDashboard() {
   return (
     <div className="min-h-screen bg-amber-50">
       
       {/* Navbar */}
       <UserNavbar />
-
+      <Chatbot/>
       {/* Main Content */}
       <div className="p-6">
         <h1 className="text-2xl font-bold mb-2">

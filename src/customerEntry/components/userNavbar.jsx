@@ -18,7 +18,7 @@ export default function UserNavbar() {
       <div className="flex gap-6 text-sm md:text-base">
         <button className="hover:underline">Dashboard</button>
         <button className="hover:underline">Bookings</button>
-        <button className="hover:underline">Profile </button>
+        <button className="hover:underline">Profile</button>
       </div>
 
       {/* Logout */}
