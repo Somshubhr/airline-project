@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { saveFlightEntry } from "../../shared/flightStore";
+import { createFlightEntry } from "../../shared/flightStore";
 
 const initialForm = {
   flightNumber: "",
@@ -16,6 +16,8 @@ const initialForm = {
 export default function FlightEntryForm() {
   const [formData, setFormData] = useState(initialForm);
   const [submittedFlight, setSubmittedFlight] = useState(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const [statusMessage, setStatusMessage] = useState("");
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -25,11 +27,23 @@ export default function FlightEntryForm() {
     }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const savedFlight = saveFlightEntry(formData);
-    setSubmittedFlight(savedFlight);
-    setFormData(initialForm);
+
+    try {
+      setIsSaving(true);
+      setStatusMessage("");
+
+      const savedFlight = await createFlightEntry(formData);
+      setSubmittedFlight(savedFlight);
+      setFormData(initialForm);
+      setStatusMessage("Flight saved to the backend successfully.");
+    } catch (error) {
+      console.error(error);
+      setStatusMessage("Unable to save the flight right now.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -168,18 +182,24 @@ export default function FlightEntryForm() {
         <div className="mt-6 flex flex-wrap gap-3">
           <button
             type="submit"
+            disabled={isSaving}
             className="rounded-lg bg-amber-400 px-5 py-3 font-semibold text-slate-950 transition hover:bg-amber-300"
           >
-            Save Flight Entry
+            {isSaving ? "Saving..." : "Save Flight Entry"}
           </button>
           <button
             type="button"
             onClick={() => setFormData(initialForm)}
+            disabled={isSaving}
             className="rounded-lg border border-slate-600 px-5 py-3 font-semibold text-slate-200 transition hover:border-slate-400 hover:text-white"
           >
             Reset
           </button>
         </div>
+
+        {statusMessage ? (
+          <p className="mt-4 text-sm text-slate-300">{statusMessage}</p>
+        ) : null}
       </form>
 
       <aside className="rounded-2xl border border-slate-700 bg-slate-800/80 p-6 shadow-xl">

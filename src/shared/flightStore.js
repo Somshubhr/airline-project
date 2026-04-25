@@ -1,44 +1,29 @@
-const STORAGE_KEY = "vocal-for-local-admin-flights";
+const API_BASE_URL = "http://localhost:8080";
 
-export function getStoredFlights() {
-  if (typeof window === "undefined") {
-    return [];
+async function parseResponse(response) {
+  if (!response.ok) {
+    throw new Error(`Request failed with status ${response.status}`);
   }
 
-  const rawFlights = window.localStorage.getItem(STORAGE_KEY);
-
-  if (!rawFlights) {
-    return [];
-  }
-
-  try {
-    const parsedFlights = JSON.parse(rawFlights);
-    return Array.isArray(parsedFlights) ? parsedFlights : [];
-  } catch (error) {
-    console.error("Failed to parse stored flights:", error);
-    return [];
-  }
+  return response.json();
 }
 
-export function saveFlightEntry(flightData) {
-  if (typeof window === "undefined") {
-    return null;
-  }
+export async function fetchFlights() {
+  const response = await fetch(`${API_BASE_URL}/admin/flights`);
+  return parseResponse(response);
+}
 
-  const newFlight = {
-    id:
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${flightData.flightNumber}-${Date.now()}`,
-    ...flightData,
-    source: flightData.origin,
-    createdAt: new Date().toISOString(),
-  };
+export async function createFlightEntry(flightData) {
+  const response = await fetch(`${API_BASE_URL}/admin/add`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      ...flightData,
+      seats: Number(flightData.seats),
+    }),
+  });
 
-  const existingFlights = getStoredFlights();
-  const updatedFlights = [newFlight, ...existingFlights];
-
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedFlights));
-
-  return newFlight;
+  return parseResponse(response);
 }

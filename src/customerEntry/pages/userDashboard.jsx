@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import Chatbot from "../components/chatBot";
 import UserNavbar from "../components/userNavbar";
-import { getStoredFlights } from "../../shared/flightStore";
+import { fetchFlights } from "../../shared/flightStore";
 
 export default function UserDashboard() {
   const [flights, setFlights] = useState([]);
@@ -10,36 +10,21 @@ export default function UserDashboard() {
   const [bookingMessage, setBookingMessage] = useState("");
 
   useEffect(() => {
-    const localFlights = getStoredFlights();
-
-    if (localFlights.length > 0) {
-      setFlights(localFlights);
-      setLoading(false);
-      return;
-    }
-
-    fetch("http://localhost:8080/user/flights")
-      .then((res) => res.json())
+    fetchFlights()
       .then((data) => {
-        setFlights(data);
+        setFlights(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((error) => {
         console.error(error);
+        setBookingMessage("Unable to load flights from the backend.");
         setLoading(false);
       });
   }, []);
 
   const handleBooking = async (flightNumber) => {
-    const localFlights = getStoredFlights();
-
-    if (localFlights.some((flight) => flight.flightNumber === flightNumber)) {
-      setBookingMessage(`Flight ${flightNumber} booked successfully.`);
-      return;
-    }
-
     try {
-      await fetch("http://localhost:8080/booking/add", {
+      const response = await fetch("http://localhost:8080/booking/add", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -49,6 +34,10 @@ export default function UserDashboard() {
           flightNumber,
         }),
       });
+
+      if (!response.ok) {
+        throw new Error(`Booking failed with status ${response.status}`);
+      }
 
       setBookingMessage(`Flight ${flightNumber} booked successfully.`);
     } catch (error) {
