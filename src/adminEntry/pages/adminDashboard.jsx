@@ -18,10 +18,14 @@ export default function AdminDashboard() {
 
         {/* Dashboard Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-800 p-6 rounded-lg">
+          <button
+            type="button"
+            onClick={() => navigate("/admin/users")}
+            className="rounded-lg bg-gray-800 p-6 text-left transition hover:bg-gray-700"
+          >
             <h2 className="text-lg font-semibold mb-2">Users</h2>
             <p className="text-gray-400">Manage registered users</p>
-          </div>
+          </button>
 
           <div className="bg-gray-800 p-6 rounded-lg">
             <h2 className="text-lg font-semibold mb-2">Bookings</h2>

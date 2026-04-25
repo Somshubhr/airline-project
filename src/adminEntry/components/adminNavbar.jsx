@@ -24,6 +24,12 @@ export default function AdminNavbar() {
         </button>
         <button className="hover:text-amber-400">Users</button>
         <button
+          onClick={() => navigate("/admin/users")}
+          className="hover:text-amber-400"
+        >
+          Users
+        </button>
+        <button
           onClick={() => navigate("/admin/flights")}
           className="hover:text-amber-400"
         >

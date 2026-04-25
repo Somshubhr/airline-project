@@ -6,6 +6,7 @@ import UserLogin from "./customerEntry/pages/userLogin";
 import AdminLogin from "./adminEntry/pages/adminLogin";
 import AdminDashboard from "./adminEntry/pages/adminDashboard";
 import FlightEntryPage from "./adminEntry/pages/flightEntryPage";
+import AdminUsers from "./adminEntry/pages/adminUsers";
 import UserDashboard from "./customerEntry/pages/userDashboard";
 
 
@@ -20,6 +21,7 @@ function AnimatedRoutes() {
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/flights" element={<FlightEntryPage />} />
+        <Route path="/admin/users" element={<AdminUsers />} />
         <Route path="/user" element={<UserDashboard />} />
       </Routes>
     </AnimatePresence>

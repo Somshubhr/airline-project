@@ -8,8 +8,20 @@ export default function UserDashboard() {
   const [loading, setLoading] = useState(true);
   const [showFlights, setShowFlights] = useState(false);
   const [bookingMessage, setBookingMessage] = useState("");
+  const [userName, setUserName] = useState("Traveler");
 
   useEffect(() => {
+    const storedUser = window.localStorage.getItem("loggedInUser");
+
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        setUserName(parsedUser.fullName || parsedUser.name || "Traveler");
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
     fetchFlights()
       .then((data) => {
         setFlights(Array.isArray(data) ? data : []);
@@ -49,10 +61,10 @@ export default function UserDashboard() {
   return (
     <div className="min-h-screen bg-amber-50">
       <UserNavbar />
-      <Chatbot />
+      <Chatbot userName={userName} />
 
       <div className="p-6">
-        <h1 className="mb-2 text-2xl font-bold">Welcome back</h1>
+        <h1 className="mb-2 text-2xl font-bold">Welcome back, {userName}</h1>
 
         <p className="mb-6 text-gray-600">What would you like to do today?</p>
 
