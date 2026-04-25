@@ -16,9 +16,19 @@ export default function AdminNavbar() {
 
       {/* Menu */}
       <div className="flex gap-6 text-sm md:text-base">
-        <button className="hover:text-amber-400">Dashboard</button>
+        <button
+          onClick={() => navigate("/admin")}
+          className="hover:text-amber-400"
+        >
+          Dashboard
+        </button>
         <button className="hover:text-amber-400">Users</button>
-        <button className="hover:text-amber-400">Bookings</button>
+        <button
+          onClick={() => navigate("/admin/flights")}
+          className="hover:text-amber-400"
+        >
+          Flights
+        </button>
         <button className="hover:text-amber-400">Reports</button>
       </div>
 

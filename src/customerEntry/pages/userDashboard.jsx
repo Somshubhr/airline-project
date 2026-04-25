@@ -1,38 +1,177 @@
-import UserNavbar from "../components/userNavbar";
+import { useEffect, useState } from "react";
 import Chatbot from "../components/chatBot";
+import UserNavbar from "../components/userNavbar";
+import { getStoredFlights } from "../../shared/flightStore";
+
 export default function UserDashboard() {
+  const [flights, setFlights] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [showFlights, setShowFlights] = useState(false);
+  const [bookingMessage, setBookingMessage] = useState("");
+
+  useEffect(() => {
+    const localFlights = getStoredFlights();
+
+    if (localFlights.length > 0) {
+      setFlights(localFlights);
+      setLoading(false);
+      return;
+    }
+
+    fetch("http://localhost:8080/user/flights")
+      .then((res) => res.json())
+      .then((data) => {
+        setFlights(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error(error);
+        setLoading(false);
+      });
+  }, []);
+
+  const handleBooking = async (flightNumber) => {
+    const localFlights = getStoredFlights();
+
+    if (localFlights.some((flight) => flight.flightNumber === flightNumber)) {
+      setBookingMessage(`Flight ${flightNumber} booked successfully.`);
+      return;
+    }
+
+    try {
+      await fetch("http://localhost:8080/booking/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userName: "Som",
+          flightNumber,
+        }),
+      });
+
+      setBookingMessage(`Flight ${flightNumber} booked successfully.`);
+    } catch (error) {
+      console.error(error);
+      setBookingMessage("Booking failed.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-amber-50">
-      
-      {/* Navbar */}
       <UserNavbar />
-      <Chatbot/>
-      {/* Main Content */}
+      <Chatbot />
+
       <div className="p-6">
-        <h1 className="text-2xl font-bold mb-2">
-          Welcome back 👋
-        </h1>
-        <p className="text-gray-600 mb-6">
-          What would you like to do today?
-        </p>
+        <h1 className="mb-2 text-2xl font-bold">Welcome back</h1>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow hover:shadow-md cursor-pointer">
-            <h2 className="text-lg font-semibold mb-2">Book a Flight</h2>
-            <p className="text-gray-600">Search and book flights easily</p>
-          </div>
+        <p className="mb-6 text-gray-600">What would you like to do today?</p>
 
-          <div className="bg-white p-6 rounded-lg shadow hover:shadow-md cursor-pointer">
-            <h2 className="text-lg font-semibold mb-2">My Bookings</h2>
+        <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <button
+            type="button"
+            onClick={() => setShowFlights(true)}
+            className="rounded-lg bg-white p-6 text-left shadow transition hover:shadow-md"
+          >
+            <h2 className="mb-2 text-lg font-semibold">Book a Flight</h2>
+            <p className="text-gray-600">
+              Open flights added from the admin dashboard
+            </p>
+          </button>
+
+          <div className="cursor-pointer rounded-lg bg-white p-6 shadow hover:shadow-md">
+            <h2 className="mb-2 text-lg font-semibold">My Bookings</h2>
             <p className="text-gray-600">View your past and upcoming trips</p>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow hover:shadow-md cursor-pointer">
-            <h2 className="text-lg font-semibold mb-2">Profile</h2>
+          <div className="cursor-pointer rounded-lg bg-white p-6 shadow hover:shadow-md">
+            <h2 className="mb-2 text-lg font-semibold">Profile</h2>
             <p className="text-gray-600">Manage your personal information</p>
           </div>
         </div>
+
+        {showFlights ? (
+          <section className="rounded-2xl bg-white p-6 shadow">
+            <div className="mb-5 flex items-center justify-between gap-4">
+              <div>
+                <h2 className="mb-1 text-xl font-semibold">Available Flights</h2>
+                <p className="text-sm text-gray-500">
+                  Browse flights created from the admin panel.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowFlights(false)}
+                className="rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+              >
+                Hide
+              </button>
+            </div>
+
+            {bookingMessage ? (
+              <div className="mb-4 rounded-lg bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                {bookingMessage}
+              </div>
+            ) : null}
+
+            {loading ? (
+              <p>Loading flights...</p>
+            ) : flights.length === 0 ? (
+              <p>No flights available</p>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {flights.map((flight) => (
+                  <div
+                    key={flight.id || flight.flightNumber}
+                    className="rounded-xl border border-amber-100 bg-amber-50 p-5"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">
+                          {flight.flightNumber}
+                        </h3>
+                        <p className="text-sm text-gray-600">
+                          {flight.airline || "Lucky Air"}
+                        </p>
+                      </div>
+
+                      <span className="rounded-full bg-amber-200 px-3 py-1 text-xs font-semibold text-amber-900">
+                        {flight.status || "Scheduled"}
+                      </span>
+                    </div>
+
+                    <p className="mt-4 text-gray-700">
+                      {flight.source || flight.origin || "Unknown"} to{" "}
+                      {flight.destination || "Unknown"}
+                    </p>
+
+                    <div className="mt-3 space-y-1 text-sm text-gray-500">
+                      <p>Aircraft: {flight.aircraftType || "Not specified"}</p>
+                      <p>Departure: {flight.departureTime || "Not specified"}</p>
+                      <p>Arrival: {flight.arrivalTime || "Not specified"}</p>
+                      <p>Seats: {flight.seats || "Not specified"}</p>
+                      <p>
+                        Price:{" "}
+                        {flight.price
+                          ? `Rs ${flight.price}`
+                          : "Available on confirmation"}
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleBooking(flight.flightNumber)}
+                      className="mt-4 rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600"
+                    >
+                      Book Now
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        ) : null}
       </div>
     </div>
   );
